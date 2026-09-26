@@ -1,10 +1,10 @@
 # database.py
-import mysql.connector
-from mysql.connector import Error
+import pymysql
+from pymysql import Error
 from config import Config
 
 def get_connection():
-    """Devuelve una conexión a la base de datos MySQL."""
+    """Devuelve una conexión a la base de datos MySQL usando PyMySQL."""
     try:
         args = {
             'host': Config.DB_HOST,
@@ -13,18 +13,16 @@ def get_connection():
             'password': Config.DB_PASSWORD,
             'database': Config.DB_NAME,
             'charset': 'utf8mb4',
-            'collation': 'utf8mb4_general_ci',
             'connect_timeout': 10,
-            'use_pure': True,
-            'autocommit': True
+            'cursorclass': pymysql.cursors.DictCursor
         }
         # Si DB_SSL es True, configuramos SSL sin verificar el certificado
         if Config.DB_SSL:
-            args['ssl_disabled'] = False
+            args['ssl'] = {'ssl': {}}
             args['ssl_verify_cert'] = False
             args['ssl_verify_identity'] = False
         
-        connection = mysql.connector.connect(**args)
+        connection = pymysql.connect(**args)
         return connection
     except Error as e:
         print(f"Error conectando a MySQL: {e}")
@@ -36,7 +34,7 @@ def query(sql, params=None, fetchone=False, fetchall=False, commit=False):
     if conn is None:
         return None
     
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     try:
         cursor.execute(sql, params or ())
         
