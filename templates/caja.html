@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Caja - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-cash-register"></i> Caja</h4>
+        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
+    </div>
+
+    <div class="p-4">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Tarjetas de resumen -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="small-box bg-success">
+                    <div class="icon"><i class="fas fa-cash-register"></i></div>
+                    <h3>{{ "%.2f"|format(caja.total_caja or 0) }}</h3>
+                    <p>Total en Caja</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="small-box bg-info">
+                    <div class="icon"><i class="fas fa-arrow-down"></i></div>
+                    <h3>{{ "%.2f"|format(total_ingresos) }}</h3>
+                    <p>Total Ingresos</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="small-box bg-danger">
+                    <div class="icon"><i class="fas fa-arrow-up"></i></div>
+                    <h3>{{ "%.2f"|format(total_egresos) }}</h3>
+                    <p>Total Egresos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Movimientos de Caja</h5>
+                <a href="{{ url_for('caja_nuevo_movimiento') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Registrar Movimiento
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <thead class="table-dark">
+    <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Monto</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
+                    </thead>
+                    <tbody>
+                        {% if movimientos %}
+                            {% for m in movimientos %}
+                                <tr>
+    <td>{{ m.id }}</td>
+    <td>
+        {% if m.clase == 'ingreso' %}
+            <span class="badge bg-success">{{ m.tipo_movimiento }}</span>
+        {% else %}
+            <span class="badge bg-danger">{{ m.tipo_movimiento }}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if m.clase == 'ingreso' %}
+            <strong class="text-success">+ {{ "%.2f"|format(m.monto) }}</strong>
+        {% else %}
+            <strong class="text-danger">- {{ "%.2f"|format(m.monto) }}</strong>
+        {% endif %}
+    </td>
+    <td>{{ m.fecha }}</td>
+    <td>
+        <a href="{{ url_for('caja_editar_movimiento', id_movimiento=m.id) }}" 
+           class="btn btn-sm btn-warning" title="Editar">
+            <i class="fas fa-edit"></i>
+        </a>
+        <a href="{{ url_for('caja_eliminar_movimiento', id_movimiento=m.id) }}" 
+           class="btn btn-sm btn-danger" 
+           onclick="return confirm('¿Eliminar este movimiento? El total de la caja se recalculará.');" 
+           title="Eliminar">
+            <i class="fas fa-trash"></i>
+        </a>
+    </td>
+</tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2">No hay movimientos registrados</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="text-muted mt-2 mb-0">
+                <i class="fas fa-info-circle"></i> Total: <strong>{{ movimientos|length }}</strong> movimiento(s)
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Zonas - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-map-marker-alt"></i> Zonas</h4>
+        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
+    </div>
+
+    <div class="p-4">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Tarjetas de resumen -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="small-box bg-info">
+                    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h3>{{ zonas|length }}</h3>
+                    <p>Zonas Registradas</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="small-box bg-success">
+                    <div class="icon"><i class="fas fa-user-tie"></i></div>
+                    <h3>{{ total_asignaciones }}</h3>
+                    <p>Asignaciones a Cobradores</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de zonas -->
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Zonas</h5>
+                <a href="{{ url_for('zona_nueva') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Añadir Zona
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Zona</th>
+                            <th>Dirección</th>
+                            <th># Cobradores</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if zonas %}
+                            {% for z in zonas %}
+                                <tr>
+                                    <td>{{ z.id }}</td>
+                                    <td><strong>{{ z.zona }}</strong></td>
+                                    <td>{{ z.direccion or '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ z.num_cobradores }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('zona_editar', id_zona=z.id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('zona_eliminar', id_zona=z.id) }}" 
+                                           class="btn btn-sm btn-danger" 
+                                           onclick="return confirm('¿Eliminar esta zona y sus asignaciones?');" 
+                                           title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2">No hay zonas registradas</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Asignaciones a cobradores -->
+        <div class="card-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-link"></i> Asignación de Zonas a Cobradores</h5>
+                <a href="{{ url_for('asignacion_nueva') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Asignación
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Zona</th>
+                            <th>Cobrador</th>
+                            <th>Sucursal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if asignaciones %}
+                            {% for a in asignaciones %}
+                                <tr>
+                                    <td>{{ a.id }}</td>
+                                    <td>{{ a.zona_nombre or '-' }}</td>
+                                    <td><strong>{{ a.cobrador_nombre or '-' }}</strong></td>
+                                    <td>{{ a.sucursal_nombre or '-' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('asignacion_editar', id_asignacion=a.id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('asignacion_eliminar', id_asignacion=a.id) }}" 
+                                           class="btn btn-sm btn-danger" 
+                                           onclick="return confirm('¿Eliminar esta asignación?');" 
+                                           title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2">No hay asignaciones registradas</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

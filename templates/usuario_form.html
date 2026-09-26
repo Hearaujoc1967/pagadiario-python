@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-user-plus"></i> {{ titulo }}</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-control" name="nombre" 
+                               value="{{ usuario.nombre if usuario else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Login *</label>
+                        <input type="text" class="form-control" name="login" 
+                               value="{{ usuario.login if usuario else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Contraseña {% if usuario %}(dejar vacío para no cambiar){% else %}*{% endif %}</label>
+                        <input type="password" class="form-control" name="clave" 
+                               {% if not usuario %}required{% endif %}>
+                        <small class="text-muted">La contraseña se guarda con hash SHA-1.</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nivel *</label>
+                        <select class="form-control" name="id_nivel" required>
+                            {% for n in niveles %}
+                                <option value="{{ n.id }}" 
+                                    {% if usuario and usuario.id_nivel == n.id %}selected{% endif %}
+                                    {% if not usuario and n.id == 1 %}selected{% endif %}>
+                                    {{ n.descripcion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Estado *</label>
+                        <select class="form-control" name="id_estado_usuario" required>
+                            {% for e in estados %}
+                                <option value="{{ e.id }}" 
+                                    {% if usuario and usuario.id_estado_usuario == e.id %}selected{% endif %}
+                                    {% if not usuario and e.id == 1 %}selected{% endif %}>
+                                    {{ e.descripcion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('usuarios') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

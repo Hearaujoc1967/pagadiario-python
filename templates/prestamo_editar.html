@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-edit"></i> {{ titulo }}</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cliente (no editable)</label>
+                        <input type="text" class="form-control" value="{{ prestamo.cliente }} (DNI: {{ prestamo.cliente_dni }})" disabled>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Monto (no editable)</label>
+                        <input type="text" class="form-control" value="{{ '%.2f'|format(prestamo.monto_prestado or 0) }}" disabled>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cobrador</label>
+                        <select class="form-control" name="id_cobrador">
+                            <option value="">-- Sin asignar --</option>
+                            {% for cb in cobradores %}
+                                <option value="{{ cb.id }}" {% if prestamo.id_cobrador == cb.id %}selected{% endif %}>
+                                    {{ cb.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipo de Préstamo</label>
+                        <select class="form-control" name="id_tipo_prestamo">
+                            {% for tp in tipos %}
+                                <option value="{{ tp.id }}" {% if prestamo.id_tipo_prestamo == tp.id %}selected{% endif %}>
+                                    {{ tp.descripcion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Método de Pago</label>
+                        <select class="form-control" name="id_metodo_pago">
+                            {% for mp in metodos %}
+                                <option value="{{ mp.id }}" {% if prestamo.id_metodo_pago == mp.id %}selected{% endif %}>
+                                    {{ mp.descripcion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Estado actual</label>
+                        <input type="text" class="form-control" value="{{ prestamo.estado_prestamo }}" disabled>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('prestamos') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

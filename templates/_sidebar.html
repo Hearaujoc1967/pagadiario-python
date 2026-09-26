@@ -1,0 +1,61 @@
+<!-- ============================================================
+     SIDEBAR UNIVERSAL - Pagadiario
+     ============================================================ -->
+<div class="sidebar" id="sidebar">
+    <div class="brand"><i class="fas fa-hand-holding-usd"></i> Pagadiario</div>
+    
+    <div class="menu-header">Principal</div>
+    <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    
+    <div class="menu-header">Gestión</div>
+    <a href="{{ url_for('clientes') }}" class="{% if request.endpoint == 'clientes' %}active{% endif %}">
+        <i class="fas fa-users"></i> Clientes
+    </a>
+    <a href="{{ url_for('codeudores') }}" class="{% if request.endpoint == 'codeudores' %}active{% endif %}">
+        <i class="fas fa-file-signature"></i> Codeudores
+    </a>
+    <a href="{{ url_for('prestamos') }}" class="{% if request.endpoint == 'prestamos' %}active{% endif %}">
+        <i class="fas fa-hand-holding-usd"></i> Préstamos
+    </a>
+    <a href="{{ url_for('cobradores') }}" class="{% if request.endpoint == 'cobradores' %}active{% endif %}">
+        <i class="fas fa-user-tie"></i> Cobradores
+    </a>
+    <a href="{{ url_for('socios') }}" class="{% if request.endpoint == 'socios' %}active{% endif %}">
+        <i class="fas fa-user-friends"></i> Socios
+    </a>
+    <a href="{{ url_for('zonas') }}" class="{% if request.endpoint == 'zonas' %}active{% endif %}">
+        <i class="fas fa-map-marker-alt"></i> Zonas
+    </a>
+    
+    <div class="menu-header">Finanzas</div>
+    <a href="{{ url_for('caja') }}" class="{% if request.endpoint == 'caja' %}active{% endif %}">
+        <i class="fas fa-cash-register"></i> Caja
+    </a>
+    <a href="{{ url_for('capital') }}" class="{% if request.endpoint == 'capital' %}active{% endif %}">
+        <i class="fas fa-coins"></i> Capital
+    </a>
+    <a href="{{ url_for('gastos') }}" class="{% if request.endpoint == 'gastos' %}active{% endif %}">
+        <i class="fas fa-receipt"></i> Gastos
+    </a>
+    <a href="{{ url_for('cierre') }}" class="{% if request.endpoint == 'cierre' %}active{% endif %}">
+        <i class="fas fa-lock"></i> Cierre por día
+    </a>
+    
+    <div class="menu-header">Configuración</div>
+    <a href="{{ url_for('empresa') }}" class="{% if request.endpoint == 'empresa' %}active{% endif %}">
+        <i class="fas fa-building"></i> Empresa
+    </a>
+    <a href="{{ url_for('usuarios') }}" class="{% if request.endpoint == 'usuarios' %}active{% endif %}">
+        <i class="fas fa-user-cog"></i> Usuarios
+    </a>
+    <a href="{{ url_for('reportes') }}" class="{% if request.endpoint == 'reportes' %}active{% endif %}">
+        <i class="fas fa-file-alt"></i> Reportes
+    </a>
+    
+    <div class="menu-header">Sesión</div>
+    <a href="{{ url_for('logout') }}">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </a>
+</div>

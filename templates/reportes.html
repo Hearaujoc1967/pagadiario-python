@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-file-alt"></i> Reportes</h4>
+        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
+    </div>
+
+    <div class="p-4">
+        
+        <!-- Filtro de fechas -->
+        <div class="card-panel">
+            <h5><i class="fas fa-calendar-alt"></i> Seleccionar Rango de Fechas</h5>
+            <form method="GET" action="{{ url_for('reportes') }}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha Inicio</label>
+                        <input type="date" class="form-control" name="fecha_i" value="{{ fecha_i }}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha Fin</label>
+                        <input type="date" class="form-control" name="fecha_f" value="{{ fecha_f }}" required>
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Generar Reporte
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resumen General -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="small-box bg-info">
+                    <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+                    <h3>{{ resumen_prestamos.total_prestamos or 0 }}</h3>
+                    <p>Préstamos Otorgados</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-success">
+                    <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <h3>{{ "%.0f"|format(resumen_cobros.total_cobrado or 0) }}</h3>
+                    <p>Total Cobrado</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-warning">
+                    <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3>{{ "%.0f"|format(resumen_prestamos.total_por_cobrar or 0) }}</h3>
+                    <p>Por Cobrar</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-danger">
+                    <div class="icon"><i class="fas fa-receipt"></i></div>
+                    <h3>{{ "%.0f"|format(resumen_gastos.total_monto or 0) }}</h3>
+                    <p>Total Gastos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prestamos por cobrador -->
+        <div class="card-panel">
+            <h5><i class="fas fa-user-tie"></i> Préstamos por Cobrador</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cobrador</th>
+                            <th># Préstamos</th>
+                            <th>Monto Total</th>
+                            <th>Por Cobrar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if prestamos_cobrador %}
+                            {% for p in prestamos_cobrador %}
+                                <tr>
+                                    <td><strong>{{ p.cobrador }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ p.total_prestamos }}</span></td>
+                                    <td>{{ "%.2f"|format(p.total_monto or 0) }}</td>
+                                    <td class="text-danger">{{ "%.2f"|format(p.total_debe or 0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No hay préstamos en este rango</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cobros por cobrador -->
+        <div class="card-panel">
+            <h5><i class="fas fa-money-bill-wave"></i> Cobros por Cobrador</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Cobrador</th>
+                            <th># Pagos</th>
+                            <th>Total Cobrado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cobros_cobrador %}
+                            {% for c in cobros_cobrador %}
+                                <tr>
+                                    <td><strong>{{ c.cobrador }}</strong></td>
+                                    <td><span class="badge bg-success">{{ c.total_pagos }}</span></td>
+                                    <td class="text-success">{{ "%.2f"|format(c.total_cobrado or 0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">No hay cobros en este rango</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Préstamos detallados -->
+        <div class="card-panel">
+            <h5><i class="fas fa-list"></i> Préstamos Otorgados ({{ prestamos|length }})</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Cobrador</th>
+                            <th>Monto</th>
+                            <th>Total</th>
+                            <th>Por Cobrar</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if prestamos %}
+                            {% for p in prestamos %}
+                                <tr>
+                                    <td>{{ p.id }}</td>
+                                    <td>{{ p.fecha_prestamo }}</td>
+                                    <td>{{ p.cliente }}</td>
+                                    <td>{{ p.cobrador or '-' }}</td>
+                                    <td>{{ "%.2f"|format(p.monto_prestado or 0) }}</td>
+                                    <td>{{ "%.2f"|format(p.total_prestado or 0) }}</td>
+                                    <td class="text-danger">{{ "%.2f"|format(p.total_debe or 0) }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ p.estado }}</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-3">No hay préstamos en este rango</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cobros detallados -->
+        <div class="card-panel">
+            <h5><i class="fas fa-money-bill-wave"></i> Cobros Recibidos ({{ cobros|length }})</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Cobrador</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cobros %}
+                            {% for c in cobros %}
+                                <tr>
+                                    <td>{{ c.id }}</td>
+                                    <td>{{ c.fecha_cobro }}</td>
+                                    <td>{{ c.cliente }}</td>
+                                    <td>{{ c.cobrador or '-' }}</td>
+                                    <td>{{ c.tipo_pago or 'Pago' }}</td>
+                                    <td class="text-success">{{ "%.2f"|format(c.monto or 0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No hay cobros en este rango</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Gastos detallados -->
+        <div class="card-panel">
+            <h5><i class="fas fa-receipt"></i> Gastos Registrados ({{ gastos|length }})</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cobrador</th>
+                            <th># Ítems</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if gastos %}
+                            {% for g in gastos %}
+                                <tr>
+                                    <td>{{ g.id }}</td>
+                                    <td>{{ g.fecha }}</td>
+                                    <td>{{ g.cobrador or '-' }}</td>
+                                    <td>{{ g.num_items }}</td>
+                                    <td class="text-danger">{{ "%.2f"|format(g.total or 0) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No hay gastos en este rango</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

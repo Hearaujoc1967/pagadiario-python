@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-plus-circle"></i> {{ titulo }}</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <form method="POST" id="formPrestamo">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cliente *</label>
+                        <select class="form-control" name="id_cliente" required>
+                            <option value="">-- Seleccionar --</option>
+                            {% for c in clientes %}
+                                <option value="{{ c.id }}">{{ c.nombre }} (DNI: {{ c.dni }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cobrador</label>
+                        <select class="form-control" name="id_cobrador">
+                            <option value="">-- Sin asignar --</option>
+                            {% for cb in cobradores %}
+                                <option value="{{ cb.id }}">{{ cb.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Monto Prestado *</label>
+                        <input type="number" step="0.01" class="form-control" name="monto_prestado" id="monto" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Porcentaje de Interés (%) *</label>
+                        <input type="number" step="0.01" class="form-control" name="porcentaje" id="porcentaje" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Número de Cuotas *</label>
+                        <input type="number" class="form-control" name="numero_cuotas" id="cuotas" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tipo de Préstamo</label>
+                        <select class="form-control" name="id_tipo_prestamo">
+                            {% for tp in tipos %}
+                                <option value="{{ tp.id }}">{{ tp.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Método de Pago</label>
+                        <select class="form-control" name="id_metodo_pago">
+                            {% for mp in metodos %}
+                                <option value="{{ mp.id }}">{{ mp.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha del Préstamo *</label>
+                        <input type="date" class="form-control" name="fecha_prestamo" value="{{ fecha_hoy }}" required>
+                    </div>
+                </div>
+
+                <!-- Resumen calculado automáticamente -->
+                <div class="card-panel bg-light mt-3">
+                    <h6><i class="fas fa-calculator"></i> Resumen Automático</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <small class="text-muted">Interés Total</small>
+                            <h5 id="resumen_interes">0.00</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Total a Pagar</small>
+                            <h5 id="resumen_total">0.00</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Monto por Cuota</small>
+                            <h5 id="resumen_cuota">0.00</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('prestamos') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Préstamo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function calcular() {
+    const monto = parseFloat(document.getElementById('monto').value) || 0;
+    const porcentaje = parseFloat(document.getElementById('porcentaje').value) || 0;
+    const cuotas = parseInt(document.getElementById('cuotas').value) || 1;
+    
+    const interes = monto * (porcentaje / 100);
+    const total = monto + interes;
+    const cuota = total / cuotas;
+    
+    document.getElementById('resumen_interes').textContent = interes.toFixed(2);
+    document.getElementById('resumen_total').textContent = total.toFixed(2);
+    document.getElementById('resumen_cuota').textContent = cuota.toFixed(2);
+}
+
+document.getElementById('monto').addEventListener('input', calcular);
+document.getElementById('porcentaje').addEventListener('input', calcular);
+document.getElementById('cuotas').addEventListener('input', calcular);
+</script>
+{% endblock %}
+
+{% endblock %}

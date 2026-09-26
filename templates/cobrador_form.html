@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-user-plus"></i> {{ titulo }}</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombre del Cobrador *</label>
+                        <input type="text" class="form-control" name="nombre" 
+                               value="{{ cobrador.nombre if cobrador else '' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Usuario del Sistema</label>
+                        <select class="form-control" name="id_usuario">
+                            <option value="">-- Sin asignar --</option>
+                            {% for u in usuarios %}
+                                <option value="{{ u.id }}" 
+                                    {% if cobrador and cobrador.id_usuario == u.id %}selected{% endif %}>
+                                    {{ u.nombre }} ({{ u.login }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Opcional. Solo si quieres vincularlo a un usuario.</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('cobradores') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

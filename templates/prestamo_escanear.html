@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Escanear Comprobante - Pagadiario{% endblock %}
+
+{% block body %}
+{% include '_sidebar.html' %}
+
+<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-camera"></i> Escanear Comprobante</h4>
+        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
+    </div>
+
+    <div class="p-4">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Info del préstamo -->
+        <div class="card-panel">
+            <h5><i class="fas fa-info-circle"></i> Préstamo #{{ prestamo.id }}</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Cliente:</strong> {{ prestamo.cliente }}</p>
+                    <p><strong>Total Debe:</strong> <span class="text-danger">S/. {{ "%.2f"|format(prestamo.total_debe or 0) }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Cuotas Pendientes:</strong> {{ prestamo.cuotas_debe or 0 }}</p>
+                    <p><strong>Monto por Cuota:</strong> S/. {{ "%.2f"|format(prestamo.monto_x_cuotas or 0) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de subida -->
+        {% if not datos %}
+        <div class="card-panel">
+            <h5><i class="fas fa-upload"></i> Subir Comprobante</h5>
+            <p class="text-muted">Selecciona el tipo de comprobante y sube la foto que te envió el cliente.</p>
+            
+            <form method="POST" enctype="multipart/form-data">
+                
+                <!-- Selector de tipo -->
+                <div class="mb-4">
+                    <label class="form-label"><strong>Tipo de Comprobante *</strong></label>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check p-3 border rounded" style="cursor:pointer;">
+                                <input class="form-check-input" type="radio" name="tipo" id="tipo_envio" value="envio" checked>
+                                <label class="form-check-label" for="tipo_envio" style="cursor:pointer;">
+                                    <i class="fas fa-paper-plane text-primary"></i>
+                                    <strong>Envío</strong>
+                                    <br>
+                                    <small class="text-muted">El cliente te envió el dinero a tu número Nequi</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check p-3 border rounded" style="cursor:pointer;">
+                                <input class="form-check-input" type="radio" name="tipo" id="tipo_pago" value="pago">
+                                <label class="form-check-label" for="tipo_pago" style="cursor:pointer;">
+                                    <i class="fas fa-qrcode text-success"></i>
+                                    <strong>Pago</strong>
+                                    <br>
+                                    <small class="text-muted">El cliente pagó a tu QR de negocio</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archivo -->
+                <div class="mb-3">
+                    <label class="form-label">Imagen del Comprobante *</label>
+                    <input type="file" class="form-control" name="comprobante" accept="image/*" required>
+                    <small class="text-muted">Formatos: PNG, JPG, JPEG. Máximo 5 MB.</small>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('prestamo_ver', id_prestamo=prestamo.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Escanear Comprobante
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Datos extraídos -->
+        {% if datos %}
+        <div class="card-panel">
+            <h5>
+                <i class="fas fa-check-circle text-success"></i> Datos Detectados
+                {% if datos.tipo == 'envio' %}
+                    <span class="badge bg-primary">ENVÍO</span>
+                {% else %}
+                    <span class="badge bg-success">PAGO</span>
+                {% endif %}
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <form method="POST" action="{{ url_for('prestamo_pago', id_prestamo=prestamo.id) }}">
+                        <input type="hidden" name="tipo_comprobante" value="{{ datos.tipo }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Monto Detectado</label>
+                                <input type="number" step="0.01" class="form-control" name="monto" 
+                                       value="{{ datos.monto or prestamo.monto_x_cuotas }}" required>
+                                {% if datos.monto %}
+                                    <small class="text-success">✓ Detectado del comprobante</small>
+                                {% else %}
+                                    <small class="text-warning">⚠ No detectado, verifica manualmente</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha de Pago</label>
+                                <input type="date" class="form-control" name="fecha_pago" 
+                                       value="{{ datos.fecha or fecha_hoy }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Banco/Método</label>
+                                <input type="text" class="form-control" name="banco" 
+                                       value="{{ datos.banco or 'Nequi' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Referencia</label>
+                                <input type="text" class="form-control" name="referencia" 
+                                       value="{{ datos.referencia or '' }}">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Cliente/Destinatario Detectado</label>
+                                <input type="text" class="form-control" name="destinatario" 
+                                       value="{{ datos.destinatario or prestamo.cliente }}">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Observaciones</label>
+                                <textarea class="form-control" name="descripcion" rows="2">Pago registrado desde comprobante de {{ datos.banco or 'Nequi' }} ({{ 'Envío' if datos.tipo == 'envio' else 'Pago' }}) - Ref: {{ datos.referencia or 'N/A' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ url_for('prestamo_escanear', id_prestamo=prestamo.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Escanear Otro
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Confirmar y Registrar Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="col-md-4">
+                    <h6>Vista Previa</h6>
+                    <img src="{{ datos.ruta_imagen }}" alt="Comprobante" 
+                         style="max-width: 100%; border-radius: 8px; border: 2px solid #ddd;">
+                    
+                    {% if datos.qr_texto %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <strong>QR:</strong> {{ datos.qr_texto[:50] }}...
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if datos.texto_completo %}
+                    <details class="mt-2">
+                        <summary>Ver texto extraído</summary>
+                        <pre style="font-size: 10px; background: #f5f5f5; padding: 8px; border-radius: 4px; max-height: 200px; overflow: auto;">{{ datos.texto_completo }}</pre>
+                    </details>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

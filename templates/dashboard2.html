@@ -1,0 +1,770 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Pagadiario{% endblock %}
+
+{% block styles %}
+<style>
+    /* ============ DASHBOARD OSCURO PAGADIARIO ============ */
+    .dashboard-dark {
+        --bg: #0b1512;
+        --bg2: #111f18;
+        --bg3: #172a1f;
+        --verde: #22c55e;
+        --verde-d: #16a34a;
+        --cyan: #06b6d4;
+        --amber: #f59e0b;
+        --rojo: #ef4444;
+        --txt: #f0fdf4;
+        --txt2: #86efac;
+        --txt3: #4ade80;
+        --border: rgba(34, 197, 94, .12);
+        --border2: rgba(34, 197, 94, .22);
+        --radius: 12px;
+        --glow: 0 0 30px rgba(34, 197, 94, .08);
+        background: var(--bg);
+        color: var(--txt);
+        min-height: 100vh;
+        margin: -20px;
+        padding: 0;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    .dashboard-dark .main {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+    }
+
+    /* ── TOPBAR DARK ── */
+    .dashboard-dark .topbar-dark {
+        background: rgba(17, 31, 24, .95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .dashboard-dark .brand-dark {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dashboard-dark .logo-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--verde);
+        box-shadow: 0 0 8px var(--verde);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1 }
+        50% { opacity: .4 }
+    }
+
+    .dashboard-dark .brand-txt {
+        font-family: 'Syne', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--txt);
+    }
+
+    .dashboard-dark .brand-sub {
+        font-size: 10px;
+        color: var(--txt2);
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-dark .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dashboard-dark .last-update {
+        font-size: 11px;
+        color: var(--txt2);
+        opacity: .7;
+    }
+
+    .dashboard-dark .btn-refresh {
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border2);
+        background: transparent;
+        color: var(--verde);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .dashboard-dark .btn-refresh:hover {
+        background: rgba(34, 197, 94, .1);
+        color: var(--verde);
+    }
+
+    /* ── KPIs ── */
+    .dashboard-dark .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .dashboard-dark .kpi {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        position: relative;
+        overflow: hidden;
+        transition: border-color .2s;
+    }
+
+    .dashboard-dark .kpi:hover {
+        border-color: var(--border2);
+    }
+
+    .dashboard-dark .kpi::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .dashboard-dark .kpi-verde::before {
+        background: linear-gradient(90deg, var(--verde), var(--cyan));
+    }
+    .dashboard-dark .kpi-cyan::before {
+        background: linear-gradient(90deg, var(--cyan), #818cf8);
+    }
+    .dashboard-dark .kpi-amber::before {
+        background: linear-gradient(90deg, var(--amber), #f97316);
+    }
+    .dashboard-dark .kpi-rojo::before {
+        background: linear-gradient(90deg, var(--rojo), #ec4899);
+    }
+
+    .dashboard-dark .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-dark .kpi-label {
+        font-size: 10px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--txt2);
+    }
+
+    .dashboard-dark .kpi-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(34, 197, 94, .1);
+        color: var(--verde);
+        font-size: 12px;
+    }
+
+    .dashboard-dark .kpi-cyan .kpi-icon {
+        background: rgba(6, 182, 212, .1);
+        color: var(--cyan);
+    }
+    .dashboard-dark .kpi-amber .kpi-icon {
+        background: rgba(245, 158, 11, .1);
+        color: var(--amber);
+    }
+    .dashboard-dark .kpi-rojo .kpi-icon {
+        background: rgba(239, 68, 68, .1);
+        color: var(--rojo);
+    }
+
+    .dashboard-dark .kpi-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--txt);
+        line-height: 1;
+        word-break: break-all;
+    }
+
+    .dashboard-dark .kpi-value.verde { color: var(--verde); }
+    .dashboard-dark .kpi-value.cyan  { color: var(--cyan); }
+    .dashboard-dark .kpi-value.amber { color: var(--amber); }
+    .dashboard-dark .kpi-value.rojo  { color: var(--rojo); }
+
+    .dashboard-dark .kpi-sub {
+        font-size: 11px;
+        color: var(--txt2);
+        margin-top: 8px;
+        opacity: .8;
+    }
+
+    /* ── FILTRO PERIODO ── */
+    .dashboard-dark .periodo-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+    }
+
+    .dashboard-dark .periodo-bar label {
+        font-size: 12px;
+        color: var(--txt2);
+        font-weight: 500;
+    }
+
+    .dashboard-dark .periodo-bar select {
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        color: var(--txt);
+        font-size: 12px;
+        font-family: inherit;
+        padding: 6px 10px;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .dashboard-dark .btn-aplicar {
+        padding: 7px 16px;
+        border-radius: 8px;
+        background: var(--verde-d);
+        color: #fff;
+        border: none;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .15s;
+    }
+
+    .dashboard-dark .btn-aplicar:hover {
+        background: var(--verde);
+    }
+
+    /* ── GRÁFICOS ── */
+    .dashboard-dark .charts-grid {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .dashboard-dark .row-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dashboard-dark .chart-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--glow);
+        min-width: 0;
+    }
+
+    .dashboard-dark .chart-card.full {
+        grid-column: 1 / -1;
+    }
+
+    .dashboard-dark .chart-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-dark .chart-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--txt);
+    }
+
+    .dashboard-dark .chart-sub {
+        font-size: 11px;
+        color: var(--txt2);
+        margin-top: 2px;
+        opacity: .8;
+    }
+
+    .dashboard-dark .chart-badge {
+        font-size: 10px;
+        font-weight: 500;
+        padding: 3px 9px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .dashboard-dark .badge-verde {
+        background: rgba(34, 197, 94, .15);
+        color: var(--verde);
+    }
+    .dashboard-dark .badge-amber {
+        background: rgba(245, 158, 11, .15);
+        color: var(--amber);
+    }
+    .dashboard-dark .badge-rojo {
+        background: rgba(239, 68, 68, .15);
+        color: var(--rojo);
+    }
+    .dashboard-dark .badge-cyan {
+        background: rgba(6, 182, 212, .15);
+        color: var(--cyan);
+    }
+
+    .dashboard-dark .chart-wrap {
+        position: relative;
+        height: 220px;
+        width: 100%;
+    }
+
+    .dashboard-dark .chart-wrap.tall {
+        height: 280px;
+    }
+
+    /* ── RANKING ── */
+    .dashboard-dark .ranking-wrap {
+        overflow-y: auto;
+        max-height: 300px;
+    }
+
+    .dashboard-dark .ranking-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .dashboard-dark .ranking-table th {
+        font-size: 10px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--txt2);
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .dashboard-dark .ranking-table td {
+        padding: 9px 10px;
+        font-size: 12px;
+        border-bottom: 1px solid rgba(34, 197, 94, .06);
+    }
+
+    .dashboard-dark .ranking-table tr:hover td {
+        background: rgba(34, 197, 94, .04);
+    }
+
+    .dashboard-dark .rank-num {
+        font-family: 'Syne', sans-serif;
+        font-size: 15px;
+        color: var(--txt2);
+        font-weight: 600;
+    }
+
+    .dashboard-dark .rank-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 13px;
+        color: var(--verde);
+        font-weight: 700;
+    }
+
+    .dashboard-dark .rank-deuda {
+        font-family: 'Syne', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: right;
+        color: var(--rojo);
+    }
+
+    .dashboard-dark .rank-bar-wrap {
+        height: 4px;
+        background: rgba(255, 255, 255, .06);
+        border-radius: 2px;
+        margin-top: 4px;
+    }
+
+    .dashboard-dark .rank-bar {
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--rojo), #f97316);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+        .dashboard-dark .kpis {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .dashboard-dark .row-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 500px) {
+        .dashboard-dark .kpi-value {
+            font-size: 20px;
+        }
+        .dashboard-dark .main {
+            padding: 16px 12px 60px;
+        }
+    }
+
+    /* ── IMPRESIÓN ── */
+    @media print {
+        .dashboard-dark {
+            background: white !important;
+            color: black !important;
+            margin: 0 !important;
+        }
+        .dashboard-dark .topbar-dark,
+        .dashboard-dark .periodo-bar {
+            display: none !important;
+        }
+        .dashboard-dark .kpi,
+        .dashboard-dark .chart-card {
+            background: white !important;
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+            color: black !important;
+        }
+        .dashboard-dark .kpi-value,
+        .dashboard-dark .chart-title,
+        .dashboard-dark .kpi-label,
+        .dashboard-dark .kpi-sub,
+        .dashboard-dark .chart-sub {
+            color: black !important;
+        }
+        .dashboard-dark .chart-wrap {
+            height: 260px !important;
+        }
+        .dashboard-dark .ranking-wrap {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-dark">
+    <div class="topbar-dark">
+        <div class="brand-dark">
+            <span class="logo-dot"></span>
+            <div>
+                <div class="brand-txt">Pagadiario</div>
+                <div class="brand-sub">Dashboard</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="last-update" id="last-update">{{ ahora }}</span>
+            <button class="btn-refresh" onclick="window.print()" title="Imprimir">🖨️</button>
+            <button class="btn-refresh" onclick="window.location.reload()">🔄 Actualizar</button>
+        </div>
+    </div>
+
+    <div class="main">
+
+        <!-- FILTRO PERÍODO -->
+        <div class="periodo-bar">
+            <label>Desde:</label>
+            <select id="f-ini-mes">
+                {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == mes_actual %}selected{% endif %}>{{ meses_nombres[m-1] }}</option>
+                {% endfor %}
+            </select>
+            <select id="f-ini-anio">
+                {% for a in anios_disponibles %}
+                    <option value="{{ a }}">{{ a }}</option>
+                {% endfor %}
+            </select>
+            <label>Hasta:</label>
+            <select id="f-fin-mes">
+                {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == mes_actual %}selected{% endif %}>{{ meses_nombres[m-1] }}</option>
+                {% endfor %}
+            </select>
+            <select id="f-fin-anio">
+                {% for a in anios_disponibles %}
+                    <option value="{{ a }}">{{ a }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn-aplicar" onclick="aplicarFiltros()">Aplicar</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpis">
+            <div class="kpi kpi-verde">
+                <div class="kpi-header">
+                    <div class="kpi-label">Clientes</div>
+                    <div class="kpi-icon">👥</div>
+                </div>
+                <div class="kpi-value verde" id="k-clientes">{{ panel.cliente_registrados }}</div>
+                <div class="kpi-sub">registrados en el sistema</div>
+            </div>
+
+            <div class="kpi kpi-cyan">
+                <div class="kpi-header">
+                    <div class="kpi-label">D. Disponible</div>
+                    <div class="kpi-icon">💵</div>
+                </div>
+                <div class="kpi-value cyan" id="k-caja">{{ "%.0f"|format(panel.dinero_capital) }}</div>
+                <div class="kpi-sub">en caja actualmente</div>
+            </div>
+
+            <div class="kpi kpi-amber">
+                <div class="kpi-header">
+                    <div class="kpi-label">Cobrado del Mes</div>
+                    <div class="kpi-icon">📈</div>
+                </div>
+                <div class="kpi-value amber" id="k-cobrado">{{ "%.0f"|format(panel.dinero_recogido) }}</div>
+                <div class="kpi-sub">ingresos del mes actual</div>
+            </div>
+
+            <div class="kpi kpi-rojo">
+                <div class="kpi-header">
+                    <div class="kpi-label">Por Cobrar</div>
+                    <div class="kpi-icon">⚠️</div>
+                </div>
+                <div class="kpi-value rojo" id="k-deuda">{{ "%.0f"|format(panel.total_por_cobrar) }}</div>
+                <div class="kpi-sub">saldo pendiente total</div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO 1: COBROS POR MES -->
+        <div class="charts-grid row-2">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Cobros por Mes</div>
+                        <div class="chart-sub">Ingresos por pagos de préstamos</div>
+                    </div>
+                    <span class="chart-badge badge-verde">S/.</span>
+                </div>
+                <div class="chart-wrap"><canvas id="chart-cobros"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Préstamos Otorgados</div>
+                        <div class="chart-sub">Monto prestado por mes</div>
+                    </div>
+                    <span class="chart-badge badge-cyan">S/.</span>
+                </div>
+                <div class="chart-wrap"><canvas id="chart-prestamos"></canvas></div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO 2: RANKING COBRADORES + TOP DEUDORES -->
+        <div class="charts-grid row-2">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Ranking Cobradores</div>
+                        <div class="chart-sub">Cobros acumulados del mes</div>
+                    </div>
+                    <span class="chart-badge badge-amber" id="badge-cobradores">{{ panel.ranking_cobradores|length }} cobradores</span>
+                </div>
+                <div class="ranking-wrap">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cobrador</th>
+                                <th style="text-align:right">Cobrado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if panel.ranking_cobradores %}
+                                {% for c in panel.ranking_cobradores %}
+                                    <tr>
+                                        <td><div class="rank-num">{{ loop.index }}</div></td>
+                                        <td>
+                                            <div class="rank-name">{{ c.cobrador }}</div>
+                                        </td>
+                                        <td><div class="rank-deuda" style="color: var(--verde);">S/. {{ "%.2f"|format(c.total_cobrado) }}</div></td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="3" style="text-align:center; color: var(--txt2);">Sin cobros registrados</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Top Deudores</div>
+                        <div class="chart-sub">Clientes con mayor saldo pendiente</div>
+                    </div>
+                    <span class="chart-badge badge-rojo" id="badge-deudores">{{ panel.top_deudores|length }} deudores</span>
+                </div>
+                <div class="ranking-wrap">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th style="text-align:right">Deuda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if panel.top_deudores %}
+                                {% for d in panel.top_deudores %}
+                                    <tr>
+                                        <td><div class="rank-num">{{ loop.index }}</div></td>
+                                        <td>
+                                            <div class="rank-name">{{ d.cliente }}</div>
+                                            <div class="rank-bar-wrap">
+                                                <div class="rank-bar" style="width: {{ d.porcentaje }}%"></div>
+                                            </div>
+                                        </td>
+                                        <td><div class="rank-deuda">S/. {{ "%.2f"|format(d.deuda) }}</div></td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="3" style="text-align:center; color: var(--txt2);">Sin deudas pendientes</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// Configuración global de Chart.js (tema oscuro)
+Chart.defaults.color = '#86efac';
+Chart.defaults.borderColor = 'rgba(34,197,94,.1)';
+Chart.defaults.font.family = 'Inter, Segoe UI, sans-serif';
+
+const C = {
+    verde: '#22c55e', verdeA: 'rgba(34,197,94,.15)',
+    cyan: '#06b6d4', cyanA: 'rgba(6,182,212,.15)',
+    amber: '#f59e0b', amberA: 'rgba(245,158,11,.15)',
+    rojo: '#ef4444', rojoA: 'rgba(239,68,68,.15)',
+};
+
+// Datos que vienen del backend (Jinja2 → JSON)
+const datosCobros = {{ panel.grafico_cobros|tojson }};
+const datosPrestamos = {{ panel.grafico_prestamos|tojson }};
+
+// === GRÁFICO 1: COBROS POR MES ===
+new Chart(document.getElementById('chart-cobros'), {
+    type: 'bar',
+    data: {
+        labels: datosCobros.map(d => d.etiqueta),
+        datasets: [{
+            label: 'Cobros S/.',
+            data: datosCobros.map(d => d.valor),
+            backgroundColor: C.verdeA,
+            borderColor: C.verde,
+            borderWidth: 1.5,
+            borderRadius: 4,
+        }]
+    },
+    options: baseOptions('S/.')
+});
+
+// === GRÁFICO 2: PRÉSTAMOS POR MES ===
+new Chart(document.getElementById('chart-prestamos'), {
+    type: 'line',
+    data: {
+        labels: datosPrestamos.map(d => d.etiqueta),
+        datasets: [{
+            label: 'Monto Prestado S/.',
+            data: datosPrestamos.map(d => d.valor),
+            borderColor: C.cyan,
+            borderWidth: 2.5,
+            backgroundColor: ctx => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
+                g.addColorStop(0, 'rgba(6,182,212,.25)');
+                g.addColorStop(1, 'rgba(6,182,212,0)');
+                return g;
+            },
+            fill: true,
+            tension: .4,
+            pointRadius: 4,
+            pointBackgroundColor: C.cyan,
+            pointBorderColor: '#0b1512',
+        }]
+    },
+    options: baseOptions('S/.')
+});
+
+// === HELPERS ===
+function baseOptions(unidad) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { labels: { font: { size: 11 }, color: '#86efac', boxWidth: 12, padding: 12 } },
+            tooltip: {
+                backgroundColor: 'rgba(11,21,18,.95)',
+                borderColor: 'rgba(34,197,94,.2)',
+                borderWidth: 1,
+                padding: 10,
+            }
+        },
+        scales: {
+            x: {
+                grid: { color: 'rgba(34,197,94,.06)' },
+                ticks: { font: { size: 10 }, maxRotation: 45 }
+            },
+            y: {
+                grid: { color: 'rgba(34,197,94,.06)' },
+                ticks: {
+                    font: { size: 10 },
+                    callback: v => 'S/. ' + v
+                }
+            }
+        }
+    };
+}
+
+// === FILTROS ===
+function aplicarFiltros() {
+    const mesIni = document.getElementById('f-ini-mes').value;
+    const anioIni = document.getElementById('f-ini-anio').value;
+    const mesFin = document.getElementById('f-fin-mes').value;
+    const anioFin = document.getElementById('f-fin-anio').value;
+    window.location.href = `?mes_ini=${mesIni}&anio_ini=${anioIni}&mes_fin=${mesFin}&anio_fin=${anioFin}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Pago - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-money-bill-wave"></i> Registrar Pago</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <h5><i class="fas fa-info-circle"></i> Préstamo #{{ prestamo.id }}</h5>
+            <p><strong>Cliente:</strong> {{ prestamo.cliente }}</p>
+            <p><strong>Total Debe:</strong> <span class="text-danger">{{ "%.2f"|format(prestamo.total_debe or 0) }}</span></p>
+            <p><strong>Cuotas Pendientes:</strong> {{ prestamo.cuotas_debe or 0 }}</p>
+            <p><strong>Monto por Cuota:</strong> {{ "%.2f"|format(prestamo.monto_x_cuotas or 0) }}</p>
+        </div>
+
+        <div class="card-panel">
+            <h5><i class="fas fa-dollar-sign"></i> Registrar Pago</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Monto del Pago *</label>
+                    <input type="number" step="0.01" class="form-control form-control-lg" 
+                           name="monto" 
+                           value="{{ '%.2f'|format(prestamo.monto_x_cuotas or 0) }}" 
+                           required>
+                    <small class="text-muted">Sugerido: {{ "%.2f"|format(prestamo.monto_x_cuotas or 0) }}</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-control" name="descripcion" rows="2">Pago Efectuado</textarea>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('prestamo_ver', id_prestamo=prestamo.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check"></i> Registrar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

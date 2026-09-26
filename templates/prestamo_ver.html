@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle Préstamo - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-eye"></i> Detalle del Préstamo #{{ prestamo.id }}</h4>
+    </div>
+
+    <div class="p-4">
+        <div class="card-panel">
+            <h5><i class="fas fa-info-circle"></i> Información del Préstamo</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Cliente:</strong> {{ prestamo.cliente }} (DNI: {{ prestamo.cliente_dni }})</p>
+                    <p><strong>Teléfono:</strong> {{ prestamo.cliente_telf }}</p>
+                    <p><strong>Cobrador:</strong> {{ prestamo.cobrador or 'Sin asignar' }}</p>
+                    <p><strong>Estado:</strong> {{ prestamo.estado_prestamo }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Monto Prestado:</strong> {{ "%.2f"|format(prestamo.monto_prestado or 0) }}</p>
+                    <p><strong>Interés:</strong> {{ "%.2f"|format(prestamo.interes or 0) }}</p>
+                    <p><strong>Total a Pagar:</strong> {{ "%.2f"|format(prestamo.total_prestado or 0) }}</p>
+                    <p><strong>Total Debe:</strong> <span class="text-danger">{{ "%.2f"|format(prestamo.total_debe or 0) }}</span></p>
+                    <p><strong>Cuotas:</strong> {{ prestamo.numero_cuotas }} (Debe: {{ prestamo.cuotas_debe or 0 }})</p>
+                    <p><strong>Fecha Préstamo:</strong> {{ prestamo.fecha_prestamo }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-panel">
+            <h5><i class="fas fa-money-bill-wave"></i> Historial de Pagos</h5>
+            {% if pagos %}
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Cuota</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                            <th>Fecha Cobro</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pagos %}
+                            <tr>
+                                <td>{{ p.id }}</td>
+                                <td>{{ p.cuota }}</td>
+                                <td>{{ p.tipo_pago }}</td>
+                                <td>{{ "%.2f"|format(p.monto or 0) }}</td>
+                                <td>{{ p.fecha_cobro }}</td>
+                                <td>{{ p.descripcion }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted">No hay pagos registrados.</p>
+            {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+    <a href="{{ url_for('prestamos') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a Préstamos
+    </a>
+<div>
+    {% if prestamo.estado_prestamo == 'Por Aprobar' %}
+        <a href="{{ url_for('prestamo_aprobar', id_prestamo=prestamo.id) }}" 
+           class="btn btn-success"
+           onclick="return confirm('¿Aprobar este préstamo? Se activará y comenzará a generar cuotas.');">
+            <i class="fas fa-check-circle"></i> Aprobar Préstamo
+        </a>
+    {% elif prestamo.estado_prestamo == 'Activo' %}
+        <a href="{{ url_for('prestamo_escanear', id_prestamo=prestamo.id) }}" 
+           class="btn btn-info">
+            <i class="fas fa-camera"></i> Escanear Comprobante
+        </a>
+        <a href="{{ url_for('prestamo_pago', id_prestamo=prestamo.id) }}" 
+           class="btn btn-primary">
+            <i class="fas fa-money-bill-wave"></i> Registrar Pago
+        </a>
+    {% endif %}
+</div>
+</div>
+
+{% endblock %}

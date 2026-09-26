@@ -1,0 +1,46 @@
+# Archivos de Python
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+env/
+
+# Base de datos
+*.db
+*.sqlite
+*.sql
+bd_prestamo_backup_*.sql
+
+# Archivos temporales
+*.log
+*.tmp
+flask_session/
+
+# Archivos de prueba / backup
+comprobante_prueba_*.jpg
+appCopia.py
+templates_BACKUP_*/
+*_BACKUP_*/
+dashboardCopia.html
+
+# Comprobantes subidos por usuarios
+static/comprobantes/*
+static/vcf_uploads/*
+!static/comprobantes/.gitkeep
+!static/vcf_uploads/.gitkeep
+
+# Configuración local
+.env
+config_local.py
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de prueba y copias
+test_db.py
+*Copia.html
+bd/conexión.py
+# Adminer (herramienta de BD, no es parte del proyecto)
+static/adminer-*.php

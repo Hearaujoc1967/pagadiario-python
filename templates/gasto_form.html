@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Pagadiario{% endblock %}
+
+{% block body %}
+
+{% include '_sidebar.html' %}<div class="main-content">
+    <div class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-plus-circle"></i> {{ titulo }}</h4>
+    </div>
+
+    <div class="p-4">
+        <form method="POST" id="formGasto">
+            
+            <!-- Cabecera del gasto -->
+            <div class="card-panel">
+                <h5><i class="fas fa-info-circle"></i> Datos del Gasto</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Cobrador</label>
+                        <select class="form-control" name="id_cobrador">
+                            <option value="">-- Sin asignar --</option>
+                            {% for c in cobradores %}
+                                <option value="{{ c.id }}" 
+                                    {% if gasto and gasto.id_cobrador == c.id %}selected{% endif %}>
+                                    {{ c.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha *</label>
+                        <input type="date" class="form-control" name="fecha" 
+                               value="{{ gasto.fecha if gasto else fecha_hoy }}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Total (automático)</label>
+                        <input type="text" class="form-control" id="totalGasto" readonly value="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalle del gasto -->
+            <div class="card-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Detalle de Ítems</h5>
+                    <button type="button" class="btn btn-sm btn-success" onclick="agregarFila()">
+                        <i class="fas fa-plus"></i> Añadir Ítem
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="tablaDetalle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 25%;">Tipo *</th>
+                                <th style="width: 30%;">Descripción</th>
+                                <th style="width: 12%;">Cantidad *</th>
+                                <th style="width: 18%;">Monto *</th>
+                                <th style="width: 15%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoDetalle">
+                            <!-- Las filas se agregan con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{{ url_for('gastos') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Gasto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Tipos de gasto pasados desde Flask
+const tiposGasto = {{ tipos | tojson }};
+
+// Contador de filas
+let contadorFilas = 0;
+
+function agregarFila(datos = null) {
+    contadorFilas++;
+    const tbody = document.getElementById('cuerpoDetalle');
+    
+    // Opciones de tipos
+    let opcionesTipos = '<option value="">-- Seleccionar --</option>';
+    tiposGasto.forEach(function(t) {
+        const selected = (datos && datos.id_tipo_gasto == t.id) ? 'selected' : '';
+        opcionesTipos += `<option value="${t.id}" ${selected}>${t.descripcion}</option>`;
+    });
+    
+    const fila = document.createElement('tr');
+    fila.id = 'fila_' + contadorFilas;
+    fila.innerHTML = `
+        <td>
+            <select class="form-control" name="tipo_gasto[]" required>
+                ${opcionesTipos}
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control" name="descripcion[]" 
+                   value="${datos ? datos.descripcion : ''}">
+        </td>
+        <td>
+            <input type="number" class="form-control cantidad" name="cantidad[]" 
+                   value="${datos ? datos.cantidad : 1}" min="1" required onchange="calcularTotal()">
+        </td>
+        <td>
+            <input type="number" step="0.01" class="form-control monto" name="monto[]" 
+                   value="${datos ? datos.monto : ''}" required onchange="calcularTotal()" oninput="calcularTotal()">
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarFila('fila_${contadorFilas}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(fila);
+    calcularTotal();
+}
+
+function eliminarFila(idFila) {
+    const fila = document.getElementById(idFila);
+    if (fila) {
+        fila.remove();
+        calcularTotal();
+    }
+}
+
+function calcularTotal() {
+    const montos = document.querySelectorAll('.monto');
+    let total = 0;
+    montos.forEach(function(input) {
+        total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('totalGasto').value = total.toFixed(2);
+}
+
+// Si es edición, cargar los detalles existentes
+{% if gasto and gasto.detalles %}
+    const detallesExistentes = {{ gasto.detalles | tojson }};
+    detallesExistentes.forEach(function(d) {
+        agregarFila(d);
+    });
+{% else %}
+    // Si es nuevo, agregar una fila vacía
+    window.addEventListener('DOMContentLoaded', function() {
+        agregarFila();
+    });
+{% endif %}
+</script>
+{% endblock %}
+
+{% endblock %}
