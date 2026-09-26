@@ -6,15 +6,23 @@ from config import Config
 def get_connection():
     """Devuelve una conexión a la base de datos MySQL."""
     try:
-        connection = mysql.connector.connect(
-            host=Config.DB_HOST,
-            port=Config.DB_PORT,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            database=Config.DB_NAME,
-            charset='utf8mb4',
-            collation='utf8mb4_general_ci'
-        )
+        # Argumentos base
+        args = {
+            'host': Config.DB_HOST,
+            'port': Config.DB_PORT,
+            'user': Config.DB_USER,
+            'password': Config.DB_PASSWORD,
+            'database': Config.DB_NAME,
+            'charset': 'utf8mb4',
+            'collation': 'utf8mb4_general_ci',
+            'connect_timeout': 10
+        }
+        # Si DB_SSL es True, agregamos SSL (obligatorio en Aiven)
+        if Config.DB_SSL:
+            args['ssl_disabled'] = False
+            args['ssl_verify_cert'] = False
+        
+        connection = mysql.connector.connect(**args)
         return connection
     except Error as e:
         print(f"Error conectando a MySQL: {e}")
