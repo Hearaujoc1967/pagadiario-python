@@ -6,7 +6,6 @@ from config import Config
 def get_connection():
     """Devuelve una conexión a la base de datos MySQL."""
     try:
-        # Argumentos base
         args = {
             'host': Config.DB_HOST,
             'port': Config.DB_PORT,
@@ -15,12 +14,15 @@ def get_connection():
             'database': Config.DB_NAME,
             'charset': 'utf8mb4',
             'collation': 'utf8mb4_general_ci',
-            'connect_timeout': 10
+            'connect_timeout': 10,
+            'use_pure': True,
+            'autocommit': True
         }
-        # Si DB_SSL es True, agregamos SSL (obligatorio en Aiven)
+        # Si DB_SSL es True, configuramos SSL sin verificar el certificado
         if Config.DB_SSL:
             args['ssl_disabled'] = False
             args['ssl_verify_cert'] = False
+            args['ssl_verify_identity'] = False
         
         connection = mysql.connector.connect(**args)
         return connection
@@ -29,13 +31,7 @@ def get_connection():
         return None
 
 def query(sql, params=None, fetchone=False, fetchall=False, commit=False):
-    """
-    Ejecuta una consulta SQL de forma segura.
-    - fetchone: devuelve una sola fila como diccionario
-    - fetchall: devuelve todas las filas como lista de diccionarios
-    - commit: si es True, hace commit (para INSERT/UPDATE/DELETE)
-    Devuelve el último ID insertado si es un INSERT.
-    """
+    """Ejecuta una consulta SQL de forma segura."""
     conn = get_connection()
     if conn is None:
         return None
